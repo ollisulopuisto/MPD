@@ -763,7 +763,8 @@ OSXOutput::Play(std::span<const std::byte> input)
 	}
 #endif
 
-	size_t bytes_written = ring_buffer.WriteFrom(input);
+	// Never consume a partial interleaved audio frame.
+	size_t bytes_written = ring_buffer.WriteFramesFrom(input, asbd.mBytesPerFrame);
 
 	if (!started) {
 		OSStatus status = AudioOutputUnitStart(au);
@@ -785,7 +786,7 @@ OSXOutput::Play(std::span<const std::byte> input)
 std::chrono::steady_clock::duration
 OSXOutput::Delay() const noexcept
 {
-	return !ring_buffer.IsFull() && !pause
+	return ring_buffer.WriteAvailable() >= asbd.mBytesPerFrame && !pause
 		? std::chrono::steady_clock::duration::zero()
 		: std::chrono::milliseconds(MPD_OSX_BUFFER_TIME_MS / 4);
 }
