@@ -330,7 +330,10 @@ osx_output_score_format(const AudioStreamBasicDescription &format_desc,
 		score += osx_output_score_sample_rate(format_desc.mSampleRate,
 						      target_format.mSampleRate);
 
-		// Just choose the stream / format with the highest number of output channels
+		// Prefer a matching channel count before using additional output channels.
+		// Sample-rate matching keeps its higher priority.
+		if (format_desc.mChannelsPerFrame == target_format.mChannelsPerFrame)
+			score += 100;
 		score += format_desc.mChannelsPerFrame * 5;
 
 		if (target_format.mFormatFlags == kLinearPCMFormatFlagIsFloat) {
