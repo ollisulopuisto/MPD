@@ -753,7 +753,7 @@ AlsaOutput::Open(AudioFormat &audio_format)
 	drain = false;
 	interrupted = false;
 
-	size_t period_size = period_frames * out_frame_size;
+	size_t period_size = size_t{period_frames} * out_frame_size;
 	ring_buffer = RingBuffer{period_size * 4};
 
 	period_buffer.Allocate(period_frames, out_frame_size);
