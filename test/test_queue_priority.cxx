@@ -170,3 +170,34 @@ TEST(QueuePriority, Priority)
 	a_order = queue.PositionToOrder(a_position);
 	EXPECT_EQ(6u, a_order);
 }
+
+TEST(QueuePriority, SetPriorityRangeNonRandom) {
+	Queue queue(16);
+
+	for (unsigned i = 0; i < 8; ++i) {
+		DetachedSong song("test.ogg");
+		queue.Append(std::move(song), 0);
+	}
+
+	EXPECT_FALSE(queue.random);
+	EXPECT_EQ(8u, queue.GetLength());
+
+	/* Updating priority range [2, 6) in non-random mode */
+	bool modified = queue.SetPriorityRange(2, 6, 42, -1);
+	EXPECT_TRUE(modified);
+
+	for (unsigned i = 0; i < 2; ++i)
+		EXPECT_EQ(0u, queue.GetPriorityAtPosition(i));
+	for (unsigned i = 2; i < 6; ++i)
+		EXPECT_EQ(42u, queue.GetPriorityAtPosition(i));
+	for (unsigned i = 6; i < 8; ++i)
+		EXPECT_EQ(0u, queue.GetPriorityAtPosition(i));
+
+	/* Order array should remain unaffected (order[i] == i) */
+	for (unsigned i = 0; i < 8; ++i)
+		EXPECT_EQ(i, queue.OrderToPosition(i));
+
+	/* Calling SetPriorityRange with the same priority should return false
+	 * (unmodified) */
+	EXPECT_FALSE(queue.SetPriorityRange(2, 6, 42, -1));
+}

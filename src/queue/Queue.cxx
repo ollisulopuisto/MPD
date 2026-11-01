@@ -494,6 +494,17 @@ Queue::SetPriorityRange(unsigned start_position, unsigned end_position,
 	assert(end_position <= length);
 
 	bool modified = false;
+
+	/* In non-random mode, priority changes do not affect playback order.
+	   Bypassing order tracking and reordering avoids repeated O(N) linear scans
+	   in OrderToPosition / PositionToOrder for each item in the range, reducing
+	   complexity from O(M * N) to O(M). */
+	if (!random) {
+		for (unsigned i = start_position; i < end_position; ++i)
+			modified |= SetPriority(i, priority, -1, false);
+		return modified;
+	}
+
 	int after_position = after_order >= 0
 		? (int)OrderToPosition(after_order)
 		: -1;
