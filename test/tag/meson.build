@@ -14,3 +14,17 @@ test(
   ),
   protocol: 'gtest',
 )
+
+test(
+  'TestParseName',
+  executable(
+    'TestParseName',
+    'TestParseName.cxx',
+    include_directories: inc,
+    dependencies: [
+      tag_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
