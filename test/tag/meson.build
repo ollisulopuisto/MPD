@@ -28,3 +28,20 @@ test(
   ),
   protocol: 'gtest',
 )
+
+if xiph_dep.found()
+  test(
+    'TestScanVorbisComment',
+    executable(
+      'TestScanVorbisComment',
+      'TestScanVorbisComment.cxx',
+      include_directories: inc,
+      dependencies: [
+        xiph_dep,
+        tag_dep,
+        gtest_dep,
+      ],
+    ),
+    protocol: 'gtest',
+  )
+endif
