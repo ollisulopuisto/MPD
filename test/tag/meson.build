@@ -16,6 +16,20 @@ test(
 )
 
 test(
+  'TestTable',
+  executable(
+    'TestTable',
+    'TestTable.cxx',
+    include_directories: inc,
+    dependencies: [
+      tag_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'TestParseName',
   executable(
     'TestParseName',
