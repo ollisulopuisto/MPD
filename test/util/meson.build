@@ -12,6 +12,7 @@ test(
     'TestMimeType.cxx',
     'TestRingBuffer.cxx',
     'TestSplitString.cxx',
+    'TestStringCompare.cxx',
     'TestStringStrip.cxx',
     'TestTemplateString.cxx',
     'TestTerminatedArray.cxx',

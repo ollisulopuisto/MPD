@@ -41,12 +41,16 @@ StringStartsWith(const char *haystack, std::string_view needle) noexcept
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
-bool
-StringEndsWith(const char *haystack, const char *needle) noexcept;
+bool StringEndsWith(const char *haystack, std::string_view needle) noexcept;
+
+[[gnu::pure]]
+static constexpr bool StringEndsWith(std::string_view haystack,
+				     std::string_view needle) noexcept {
+	return haystack.ends_with(needle);
+}
 
 [[gnu::pure]] [[gnu::nonnull]]
-bool
-StringEndsWithIgnoreCase(const char *haystack, const char *needle) noexcept;
+bool StringEndsWithIgnoreCase(const char *haystack, std::string_view needle) noexcept;
 
 /**
  * Returns the portion of the string after a prefix.  If the string
@@ -91,9 +95,10 @@ StringStartsWithIgnoreCase(std::string_view haystack, std::string_view needle) n
 static inline bool
 StringEndsWithIgnoreCase(std::string_view haystack, std::string_view needle) noexcept
 {
+	/* Avoid substr() slice creation: directly compare needle-sized suffix */
 	return haystack.size() >= needle.size() &&
-		StringIsEqualIgnoreCase(haystack.substr(haystack.size() - needle.size()),
-					needle);
+	       StringIsEqualIgnoreCase(haystack.data() + haystack.size() - needle.size(),
+				       needle.data(), needle.size());
 }
 
 /**
@@ -126,8 +131,7 @@ StringAfterPrefixIgnoreCase(std::string_view haystack,
  * returns the position of the suffix, and nullptr otherwise.
  */
 [[gnu::pure]] [[gnu::nonnull]]
-const char *
-FindStringSuffix(const char *p, const char *suffix) noexcept;
+const char *FindStringSuffix(const char *p, std::string_view suffix) noexcept;
 
 template<typename T>
 constexpr bool

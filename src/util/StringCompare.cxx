@@ -5,39 +5,41 @@
 
 #include <cstring>
 
-bool
-StringEndsWith(const char *haystack, const char *needle) noexcept
-{
+/**
+ * Optimized suffix check.
+ * Accepting std::string_view for needle eliminates runtime strlen(needle) calls
+ * when passing literals or string views.
+ */
+bool StringEndsWith(const char *haystack, std::string_view needle) noexcept {
 	const size_t haystack_length = StringLength(haystack);
-	const size_t needle_length = StringLength(needle);
 
-	return haystack_length >= needle_length &&
-		std::memcmp(haystack + haystack_length - needle_length,
-			    needle, needle_length) == 0;
+	return haystack_length >= needle.size() &&
+	       std::memcmp(haystack + haystack_length - needle.size(), needle.data(),
+			   needle.size()) == 0;
 }
 
-bool
-StringEndsWithIgnoreCase(const char *haystack, const char *needle) noexcept
-{
+/**
+ * Optimized case-insensitive suffix check.
+ * Skips runtime strlen(needle) by accepting std::string_view.
+ */
+bool StringEndsWithIgnoreCase(const char *haystack, std::string_view needle) noexcept {
 	const size_t haystack_length = StringLength(haystack);
-	const size_t needle_length = StringLength(needle);
 
-	return haystack_length >= needle_length &&
-		StringIsEqualIgnoreCase(haystack + haystack_length - needle_length,
-					needle);
+	return haystack_length >= needle.size() &&
+	       StringIsEqualIgnoreCase(haystack + haystack_length - needle.size(),
+				       needle.data(), needle.size());
 }
 
-const char *
-FindStringSuffix(const char *p, const char *suffix) noexcept
-{
+/**
+ * Optimized suffix finder.
+ * Skips runtime strlen(suffix) by accepting std::string_view.
+ */
+const char *FindStringSuffix(const char *p, std::string_view suffix) noexcept {
 	const size_t p_length = StringLength(p);
-	const size_t suffix_length = StringLength(suffix);
 
-	if (p_length < suffix_length)
+	if (p_length < suffix.size())
 		return nullptr;
 
-	const char *q = p + p_length - suffix_length;
-	return std::memcmp(q, suffix, suffix_length) == 0
-		? q
-		: nullptr;
+	const char *q = p + p_length - suffix.size();
+	return std::memcmp(q, suffix.data(), suffix.size()) == 0 ? q : nullptr;
 }
