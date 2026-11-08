@@ -16,6 +16,21 @@ test(
 )
 
 test(
+  'TestApeTag',
+  executable(
+    'TestApeTag',
+    'TestApeTag.cxx',
+    include_directories: inc,
+    dependencies: [
+      tag_dep,
+      input_glue_dep,
+      gtest_dep,
+    ],
+  ),
+  protocol: 'gtest',
+)
+
+test(
   'TestTable',
   executable(
     'TestTable',
