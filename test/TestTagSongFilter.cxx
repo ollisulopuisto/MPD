@@ -191,3 +191,89 @@ TEST_F(TagSongFilterTest, NegatedFallback)
 	EXPECT_FALSE(InvokeFilter(f, MakeTag(TAG_ARTIST, "needle")));
 	EXPECT_TRUE(InvokeFilter(f, MakeTag(TAG_ARTIST, "needle", TAG_ALBUM_ARTIST, "foo")));
 }
+
+#include "song/Filter.hxx"
+
+TEST_F(TagSongFilterTest, ParseFilterTypes) {
+	// Standard tag names (case insensitive)
+	{
+		SongFilter filter;
+		const char *const args[] = {"artist", "Test Artist"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag = MakeTag(TAG_ARTIST, "Test Artist");
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"Title", "Test Title"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag = MakeTag(TAG_TITLE, "Test Title");
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"ALBUM", "Test Album"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag = MakeTag(TAG_ALBUM, "Test Album");
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	// Special keywords
+	{
+		SongFilter filter;
+		const char *const args[] = {"file", "test.ogg"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag;
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"filename", "test.ogg"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag;
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"any", "Test"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		Tag tag = MakeTag(TAG_ARTIST, "Test");
+		LightSong song("test.ogg", tag);
+		EXPECT_TRUE(filter.Match(song));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"base", "dir"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+		EXPECT_STREQ(filter.GetBase(), "dir");
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"modified-since", "2020-01-01"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+	}
+
+	{
+		SongFilter filter;
+		const char *const args[] = {"added-since", "2020-01-01"};
+		EXPECT_NO_THROW(filter.Parse(args, false, false));
+	}
+
+	// Unknown tag
+	{
+		SongFilter filter;
+		const char *const args[] = {"unknown_tag_xyz", "value"};
+		EXPECT_THROW(filter.Parse(args, false, false), std::runtime_error);
+	}
+}
