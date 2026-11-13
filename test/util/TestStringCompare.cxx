@@ -49,6 +49,13 @@ TEST(StringCompare, StringStartsWith) {
 	EXPECT_FALSE(StringStartsWith("hello.world"sv, "hellp"sv));
 }
 
+TEST(StringCompare, StringStartsWithStopsAtTerminator) {
+	/* a needle that starts with a NUL byte must not make the check read
+	   past the end of the (empty) haystack */
+	EXPECT_TRUE(StringStartsWith("", "\0abc"sv));
+	EXPECT_TRUE(StringStartsWithIgnoreCase("", "\0abc"sv));
+}
+
 TEST(StringCompare, StringStartsWithIgnoreCase) {
 	EXPECT_TRUE(StringStartsWithIgnoreCase("hello.world", "hello"));
 	EXPECT_TRUE(StringStartsWithIgnoreCase("hello.world", "hello"sv));

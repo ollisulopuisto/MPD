@@ -43,9 +43,16 @@ StringIsEqualIgnoreCase(std::string_view a, std::string_view b) noexcept
 static inline bool
 StringStartsWith(const char *haystack, std::string_view needle) noexcept
 {
-	return needle.empty() ||
-	       (*haystack == needle.front() &&
-		StringIsEqual(haystack + 1, needle.data() + 1, needle.size() - 1));
+	if (needle.empty())
+		return true;
+
+	/* cheap rejection of the common case; the full comparison below
+	   keeps the exact strncmp() semantics (it never reads past the
+	   terminator of "haystack") */
+	if (*haystack != needle.front())
+		return false;
+
+	return StringIsEqual(haystack, needle.data(), needle.size());
 }
 
 [[gnu::pure]]
@@ -98,10 +105,13 @@ StringAfterPrefix(std::string_view haystack, std::string_view needle) noexcept
 static inline bool
 StringStartsWithIgnoreCase(const char *haystack, std::string_view needle) noexcept
 {
-	return needle.empty() ||
-	       (ToUpperASCII(*haystack) == ToUpperASCII(needle.front()) &&
-		StringIsEqualIgnoreCase(haystack + 1, needle.data() + 1,
-					needle.size() - 1));
+	if (needle.empty())
+		return true;
+
+	if (ToUpperASCII(*haystack) != ToUpperASCII(needle.front()))
+		return false;
+
+	return StringIsEqualIgnoreCase(haystack, needle.data(), needle.size());
 }
 
 [[gnu::pure]]
