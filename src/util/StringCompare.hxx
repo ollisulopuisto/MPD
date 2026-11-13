@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "CharUtil.hxx"
 #include "StringAPI.hxx"
 
 #ifdef _UNICODE
@@ -33,11 +34,31 @@ StringIsEqualIgnoreCase(std::string_view a, std::string_view b) noexcept
 		StringIsEqualIgnoreCase(a.data(), b.data(), b.size());
 }
 
+/**
+ * Optimized prefix check.
+ * Checks the initial character upfront before calling StringIsEqual,
+ * skipping strncmp for non-matching candidates.
+ */
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringStartsWith(const char *haystack, std::string_view needle) noexcept
 {
+	if (needle.empty())
+		return true;
+
+	/* cheap rejection of the common case; the full comparison below
+	   keeps the exact strncmp() semantics (it never reads past the
+	   terminator of "haystack") */
+	if (*haystack != needle.front())
+		return false;
+
 	return StringIsEqual(haystack, needle.data(), needle.size());
+}
+
+[[gnu::pure]]
+static constexpr bool StringStartsWith(std::string_view haystack,
+				       std::string_view needle) noexcept {
+	return haystack.starts_with(needle);
 }
 
 [[gnu::pure]] [[gnu::nonnull]]
@@ -75,10 +96,21 @@ StringAfterPrefix(std::string_view haystack, std::string_view needle) noexcept
 		: std::string_view{};
 }
 
+/**
+ * Optimized case-insensitive prefix check.
+ * Performs fast uppercase initial-character filtering to avoid
+ * expensive case-insensitive string comparisons for non-matching prefixes.
+ */
 [[gnu::pure]] [[gnu::nonnull]]
 static inline bool
 StringStartsWithIgnoreCase(const char *haystack, std::string_view needle) noexcept
 {
+	if (needle.empty())
+		return true;
+
+	if (ToUpperASCII(*haystack) != ToUpperASCII(needle.front()))
+		return false;
+
 	return StringIsEqualIgnoreCase(haystack, needle.data(), needle.size());
 }
 
@@ -87,8 +119,10 @@ static inline bool
 StringStartsWithIgnoreCase(std::string_view haystack, std::string_view needle) noexcept
 {
 	return haystack.size() >= needle.size() &&
-		StringIsEqualIgnoreCase(haystack.data(),
-					needle.data(), needle.size());
+	       (needle.empty() ||
+		(ToUpperASCII(haystack.front()) == ToUpperASCII(needle.front()) &&
+		 StringIsEqualIgnoreCase(haystack.data() + 1, needle.data() + 1,
+					 needle.size() - 1)));
 }
 
 [[gnu::pure]]
